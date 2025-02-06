@@ -1,0 +1,15 @@
+name: Main Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch_or_tag:
+        description: "Branch or tag to use when cloning opencv/opencv"
+        required: true
+        type: string
+
+jobs:
+  build-ios:
+    uses: ./.github/workflows/build-ios-core-imgproc-imgcodecs.yaml
+    with:
+      target_branch: ${{ github.event.inputs.target_branch_or_tag }}

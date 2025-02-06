@@ -1,0 +1,37 @@
+name: Build OpenCV modules core, imgproc, imgcodecs as XCFramework 
+
+on:
+  workflow_call:
+    inputs:
+      target_branch:
+        description: "Branch or tag to use when cloning opencv/opencv"
+        required: true
+        type: string
+
+jobs:
+  Build:
+    runs-on: macos-latest
+    steps:
+      - name: Clean
+        timeout-minutes: 60
+        run: cd ${{ github.workspace }} && find . -mindepth 1 -delete
+      - name: Fetch opencv
+        timeout-minutes: 60
+        run: cd ${{ github.workspace }} && git clone --branch ${{ inputs.target_branch }} https://github.com/opencv/opencv.git opencv
+      - name: Build OpenCV iOS XCFramework
+        timeout-minutes: 120
+        run: |
+          cd ${{ github.workspace }} && python3 opencv/platforms/apple/build_xcframework.py \
+            --out ios --framework_name opencv2 \
+            --iphoneos_archs arm64 --iphonesimulator_archs x86_64,arm64 --build_only_specified_archs \
+            --without video --without objdetect --without features2d --without flann --without calib3d --without ml --without photo --without shape --without stitching --without superres --without highgui --without videoio \
+            --disable opencl --disable tbb --disable openmp --disable png --disable tiff --disable webp --disable gstreamer --disable eigen --disable protobuf
+      - name: Create Artifact
+        timeout-minutes: 10
+        run: cd ${{ github.workspace }}/ios && zip -r -9 -y opencv-${{ inputs.target_branch }}-ios-core-imgproc-imgcodecs-xcframework.zip opencv2.xcframework
+      - name: Upload Artifact
+        timeout-minutes: 60
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenCViOSFramework
+          path: ${{ github.workspace }}/ios/opencv-${{ inputs.target_branch }}-ios-core-imgproc-imgcodecs-xcframework.zip
