@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
     inputs:
       target_branch_or_tag:
-        description: "Branch or tag to use when cloning opencv/opencv"
+        description: "Branch or tag to use when cloning opencv/opencv (4.x or higher)"
         required: true
         type: string
 
 jobs:
-  build-ios:
-    uses: ./.github/workflows/build-ios-core-imgproc-imgcodecs.yaml
+  build-xcframework:
+    uses: ./.github/workflows/build-xcframework.yaml
     with:
       target_branch: ${{ github.event.inputs.target_branch_or_tag }}
