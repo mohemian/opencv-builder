@@ -3,8 +3,13 @@ name: Main Workflow
 on:
   workflow_dispatch:
     inputs:
-      target_branch_or_tag:
-        description: "Branch or tag to use when cloning opencv/opencv"
+      repo:
+        description: Repo to use
+        required: false
+        default: https://github.com/opencv/opencv.git
+        type: string
+      ref:
+        description: Branch or tag to use
         required: true
         type: string
 
@@ -17,7 +22,7 @@ jobs:
       - name: Check if version is 3.x
         id: check_version
         run: |
-          if [[ "${{ github.event.inputs.target_branch_or_tag }}" =~ ^3\..* ]]; then
+          if [[ "${{ github.event.inputs.ref }}" =~ ^3\..* ]]; then
             echo "legacy=true" >> $GITHUB_ENV
             echo "::set-output name=legacy::true"
           else
@@ -30,12 +35,14 @@ jobs:
     if: needs.determine-build.outputs.legacy == 'true'
     uses: ./.github/workflows/build-legacy-framework.yaml
     with:
-      target_branch: ${{ github.event.inputs.target_branch_or_tag }}
+      repo: ${{ github.event.inputs.repo }}
+      ref: ${{ github.event.inputs.ref }}
 
   run-xcframework:
     needs: determine-build
     if: needs.determine-build.outputs.legacy == 'false'
     uses: ./.github/workflows/build-xcframework.yaml
     with:
-      target_branch: ${{ github.event.inputs.target_branch_or_tag }}
+      repo: ${{ github.event.inputs.repo }}
+      ref: ${{ github.event.inputs.ref }}
 

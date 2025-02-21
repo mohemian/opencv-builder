@@ -1,10 +1,12 @@
-name: Build Legacy Universal Fat Framework
+name: Build Legacy Framework
 
 on:
   workflow_call:
     inputs:
-      target_branch:
-        description: "Branch or tag to use when cloning opencv/opencv"
+      repo:
+        required: true
+        type: string
+      ref:
         required: true
         type: string
 
@@ -17,21 +19,20 @@ jobs:
         run: cd ${{ github.workspace }} && find . -mindepth 1 -delete
       - name: Fetch opencv
         timeout-minutes: 60
-        run: cd ${{ github.workspace }} && git clone --branch ${{ inputs.target_branch }} https://github.com/opencv/opencv.git opencv
+        run: cd ${{ github.workspace }} && git clone --branch ${{ inputs.ref }} ${{ inputs.repo }} opencv
       - name: Build OpenCV iOS Universal Fat Framework
         timeout-minutes: 120
         run: |
           cd ${{ github.workspace }} && python3 opencv/platforms/ios/build_framework.py ios \
-            --iphoneos_archs arm64 --iphonesimulator_archs x86_64 \
-            --without gpu --without calib3d --without contrib --without features2D --without flann --without highgui --without legacy --without ml --without nonfree --without objdetect --without photo --without stitching --without video --without videostab \
-            --disable opencl --disable tbb --disable openmp --disable png --disable tiff --disable webp --disable gstreamer --disable eigen --disable protobuf
+            --iphoneos_archs arm64 --iphonesimulator_archs x86_64 --iphoneos_deployment_target 14.0 \
+            --without gpu --without calib3d --without contrib --without features2D --without flann --without highgui --without legacy --without ml --without nonfree --without objdetect --without photo --without stitching --without video --without videostab
       - name: Create Artifact
         timeout-minutes: 10
-        run: cd ${{ github.workspace }}/ios && zip -r -9 -y opencv-${{ inputs.target_branch }}-framework.zip opencv2.framework
+        run: cd ${{ github.workspace }}/ios && zip -r -9 -y opencv-${{ inputs.ref }}-framework.zip opencv2.framework
       - name: Upload Artifact
         timeout-minutes: 60
         uses: actions/upload-artifact@v4
         with:
-          name: opencv-${{ inputs.target_branch }}-framework.zip
-          path: ${{ github.workspace }}/ios/opencv-${{ inputs.target_branch }}-framework.zip
+          name: opencv-${{ inputs.ref }}-framework.zip
+          path: ${{ github.workspace }}/ios/opencv-${{ inputs.ref }}-framework.zip
 

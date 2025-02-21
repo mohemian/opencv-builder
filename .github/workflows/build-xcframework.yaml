@@ -3,8 +3,10 @@ name: Build XCFramework
 on:
   workflow_call:
     inputs:
-      target_branch:
-        description: "Branch or tag to use when cloning opencv/opencv (4.x or higher)"
+      repo:
+        required: true
+        type: string
+      ref:
         required: true
         type: string
 
@@ -17,7 +19,7 @@ jobs:
         run: cd ${{ github.workspace }} && find . -mindepth 1 -delete
       - name: Fetch opencv
         timeout-minutes: 60
-        run: cd ${{ github.workspace }} && git clone --branch ${{ inputs.target_branch }} https://github.com/opencv/opencv.git opencv
+        run: cd ${{ github.workspace }} && git clone --branch ${{ inputs.ref }} ${{ inputs.repo }} opencv
       - name: Build OpenCV iOS XCFramework
         timeout-minutes: 120
         run: |
@@ -28,10 +30,10 @@ jobs:
             --disable opencl --disable tbb --disable openmp --disable png --disable tiff --disable webp --disable gstreamer --disable eigen --disable protobuf
       - name: Create Artifact
         timeout-minutes: 10
-        run: cd ${{ github.workspace }}/ios && zip -r -9 -y opencv-${{ inputs.target_branch }}-xcframework.zip opencv2.xcframework
+        run: cd ${{ github.workspace }}/ios && zip -r -9 -y opencv-${{ inputs.ref }}-xcframework.zip opencv2.xcframework
       - name: Upload Artifact
         timeout-minutes: 60
         uses: actions/upload-artifact@v4
         with:
-          name: opencv-${{ inputs.target_branch }}-xcframework.zip
-          path: ${{ github.workspace }}/ios/opencv-${{ inputs.target_branch }}-xcframework.zip
+          name: opencv-${{ inputs.ref }}-xcframework.zip
+          path: ${{ github.workspace }}/ios/opencv-${{ inputs.ref }}-xcframework.zip
