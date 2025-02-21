@@ -4,12 +4,38 @@ on:
   workflow_dispatch:
     inputs:
       target_branch_or_tag:
-        description: "Branch or tag to use when cloning opencv/opencv (4.x or higher)"
+        description: "Branch or tag to use when cloning opencv/opencv"
         required: true
         type: string
 
 jobs:
-  build-xcframework:
+  determine-build:
+    runs-on: ubuntu-latest
+    outputs:
+      legacy: ${{ steps.check_version.outputs.legacy }}
+    steps:
+      - name: Check if version is 3.x
+        id: check_version
+        run: |
+          if [[ "${{ github.event.inputs.target_branch_or_tag }}" =~ ^3\..* ]]; then
+            echo "legacy=true" >> $GITHUB_ENV
+            echo "::set-output name=legacy::true"
+          else
+            echo "legacy=false" >> $GITHUB_ENV
+            echo "::set-output name=legacy::false"
+          fi
+
+  run-legacy-framework:
+    needs: determine-build
+    if: needs.determine-build.outputs.legacy == 'true'
+    uses: ./.github/workflows/build-legacy-framework.yaml
+    with:
+      target_branch: ${{ github.event.inputs.target_branch_or_tag }}
+
+  run-xcframework:
+    needs: determine-build
+    if: needs.determine-build.outputs.legacy == 'false'
     uses: ./.github/workflows/build-xcframework.yaml
     with:
       target_branch: ${{ github.event.inputs.target_branch_or_tag }}
+
