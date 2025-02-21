@@ -28,10 +28,10 @@ jobs:
             --disable opencl --disable tbb --disable openmp --disable png --disable tiff --disable webp --disable gstreamer --disable eigen --disable protobuf
       - name: Create Artifact
         timeout-minutes: 10
-        run: cd ${{ github.workspace }}/ios && zip -r -9 -y opencv-${{ inputs.target_branch }}-ios-core-imgproc-imgcodecs-xcframework.zip opencv2.xcframework
+        run: cd ${{ github.workspace }}/ios && zip -r -9 -y opencv-${{ inputs.target_branch }}-core-imgproc-imgcodecs-xcframework.zip opencv2.xcframework
       - name: Upload Artifact
         timeout-minutes: 60
         uses: actions/upload-artifact@v4
         with:
-          name: OpenCViOSFramework
-          path: ${{ github.workspace }}/ios/opencv-${{ inputs.target_branch }}-ios-core-imgproc-imgcodecs-xcframework.zip
+          name: opencv-${{ inputs.target_branch }}-core-imgproc-imgcodecs-xcframework.zip
+          path: ${{ github.workspace }}/ios/opencv-${{ inputs.target_branch }}-core-imgproc-imgcodecs-xcframework.zip
